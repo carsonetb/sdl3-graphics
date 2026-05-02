@@ -1,0 +1,11 @@
+[package]
+name = "graphics"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+glam = "0.32.1"
+sdl3 = { version = "0.18.0", features = ["build-from-source", "image", "ttf"] }
+
+[build-dependencies]
+shaderc = "0.10.1"
