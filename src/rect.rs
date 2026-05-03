@@ -1,4 +1,4 @@
-use glam::Mat4;
+use glam::{Mat4, Vec2};
 use sdl3::{
     Error,
     gpu::{CommandBuffer, CopyPass, RenderPass, ShaderFormat, ShaderStage, VertexElementFormat},
@@ -26,6 +26,12 @@ pub struct RectInstanceData {
     pub pos: [f32; 2],
     pub dim: [f32; 2],
     pub col: [f32; 4],
+    pub radii: [f32; 4],
+    pub border_width: f32,
+    pub border_color: [f32; 4],
+    pub shadow_color: [f32; 4],
+    pub shadow_offset: [f32; 2],
+    pub shadow_softness: f32,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -45,11 +51,35 @@ impl Rect {
 pub struct RectParams {
     pub rect: Rect,
     pub color: Color,
+    pub radii: [f32; 4],
+    pub border_width: f32,
+    pub border_color: Color,
+    pub shadow_color: Color,
+    pub shadow_offset: Vec2,
+    pub shadow_softness: f32,
 }
 
 impl RectParams {
-    pub fn new(rect: Rect, color: Color) -> Self {
-        Self { rect, color }
+    pub fn new(
+        rect: Rect,
+        color: Color,
+        radii: [f32; 4],
+        border_width: f32,
+        border_color: Color,
+        shadow_color: Color,
+        shadow_offset: Vec2,
+        shadow_softness: f32,
+    ) -> Self {
+        Self {
+            rect,
+            color,
+            radii,
+            border_width,
+            border_color,
+            shadow_color,
+            shadow_offset,
+            shadow_softness,
+        }
     }
 }
 
@@ -73,6 +103,12 @@ impl RectPipelineManager {
             pos: [rect.rect.x, rect.rect.y],
             dim: [rect.rect.w, rect.rect.h],
             col: rect.color.to_slice(),
+            radii: rect.radii,
+            border_width: rect.border_width,
+            border_color: rect.border_color.to_slice(),
+            shadow_color: rect.shadow_color.to_slice(),
+            shadow_offset: rect.shadow_offset.to_array(),
+            shadow_softness: rect.shadow_softness,
         });
     }
 }
@@ -128,6 +164,12 @@ impl PipelineManager for RectPipelineManager {
                     vertex_attribute(1, 1, 0, VertexElementFormat::Float2),
                     vertex_attribute(1, 2, 8, VertexElementFormat::Float2),
                     vertex_attribute(1, 3, 16, VertexElementFormat::Float4),
+                    vertex_attribute(1, 4, 32, VertexElementFormat::Float4),
+                    vertex_attribute(1, 5, 48, VertexElementFormat::Float),
+                    vertex_attribute(1, 6, 52, VertexElementFormat::Float4),
+                    vertex_attribute(1, 7, 68, VertexElementFormat::Float4),
+                    vertex_attribute(1, 8, 84, VertexElementFormat::Float4),
+                    vertex_attribute(1, 9, 92, VertexElementFormat::Float4),
                 ],
             ),
             &fs_shader,
