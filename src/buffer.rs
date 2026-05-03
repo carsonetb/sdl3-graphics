@@ -18,7 +18,6 @@ impl<T: Copy> BufferHelper<T> {
     }
 
     pub fn new(device: &Device, data: Vec<T>, max_size: u32) -> Result<Self, Error> {
-        let data_size = Self::data_size(&data);
         let out = Self {
             data,
             buffer: device
@@ -29,7 +28,7 @@ impl<T: Copy> BufferHelper<T> {
             transfer: device
                 .create_transfer_buffer()
                 .with_usage(TransferBufferUsage::UPLOAD)
-                .with_size(data_size)
+                .with_size(size_of::<T>() as u32 * max_size)
                 .build()?,
         };
         out.refresh_transfer(device);
@@ -39,7 +38,7 @@ impl<T: Copy> BufferHelper<T> {
 
     pub fn refresh_transfer(&self, device: &Device) {
         let mut map: BufferMemMap<'_, T> = self.transfer.map(&device, false);
-        map.mem_mut().copy_from_slice(&self.data);
+        map.mem_mut()[..self.data.len()].copy_from_slice(&self.data);
         map.unmap();
     }
 
