@@ -5,15 +5,20 @@ use sdl3::{
     gpu::{ColorTargetInfo, Device, ShaderFormat},
     pixels::Color,
     sys::gpu::{SDL_GPULoadOp, SDL_GPUStoreOp},
+    ttf::sys::TTF_CreateGPUTextEngine,
     video::Window,
 };
 
-use crate::pipeline::PipelineManager;
+use crate::{
+    pipeline::PipelineManager,
+    rect::{RectParams, RectPipelineManager},
+};
 
 pub struct UIWindow {
     pub window: Window,
     pub device: Device,
     pipelines: Vec<Rc<RefCell<dyn PipelineManager>>>,
+    rect_pipeline: Rc<RefCell<RectPipelineManager>>,
 }
 
 impl UIWindow {
@@ -32,11 +37,17 @@ impl UIWindow {
 
         let device = Device::new(ShaderFormat::SPIRV, true)?.with_window(&window)?;
 
-        Ok(Self {
+        let rect_pipeline = Rc::new(RefCell::new(RectPipelineManager::new()));
+        let mut out = Self {
             window,
             device,
             pipelines: vec![],
-        })
+            rect_pipeline: rect_pipeline.clone(),
+        };
+
+        out.add_pipeline(rect_pipeline)?;
+
+        Ok(out)
     }
 
     pub fn add_pipeline(
@@ -46,6 +57,10 @@ impl UIWindow {
         pipeline.borrow_mut().init(self)?;
         self.pipelines.push(pipeline);
         Ok(())
+    }
+
+    pub fn draw_rect(&self, params: RectParams) {
+        self.rect_pipeline.borrow_mut().draw(params);
     }
 
     pub fn update(&mut self) -> Result<(), sdl3::Error> {

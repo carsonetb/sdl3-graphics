@@ -39,4 +39,14 @@ fn main() {
         "rect.frag.spv",
         ShaderKind::Fragment,
     );
+    shader(
+        "resources/text.vert.hlsl",
+        "text.vert.spv",
+        ShaderKind::Vertex,
+    );
+    shader(
+        "resources/text.frag.hlsl",
+        "text.frag.spv",
+        ShaderKind::Fragment,
+    );
 }

@@ -214,6 +214,10 @@ impl PipelineManager for RectPipelineManager {
     }
 
     fn finish(&mut self) -> Result<(), Error> {
+        if !self.initialized {
+            panic!("RectPipelineManager not initialized.");
+        }
+
         self.data.clear();
 
         Ok(())
